@@ -1,19 +1,43 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/_endian.h>
 #include <sys/_types/_in_port_t.h>
 #include <sys/_types/_socklen_t.h>
+#include <sys/_types/_ssize_t.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 // Max request this server can handle
 static const int MAXPENDING = 5;
 
 // TODO
-void HandleTCPClient(int clntSocket) {}
+void HandleTCPClient(int clntSocket) {
+  char buffer[BUFSIZ];
+  ssize_t numBytesRcvd = recv(clntSocket, buffer, BUFSIZ, 0);
+  if (numBytesRcvd < 0) {
+    printf("Error at 2.1\n");
+    return;
+  }
+  while (numBytesRcvd > 0) {
+    ssize_t numBytesSent = send(clntSocket, buffer, numBytesRcvd, 0);
+
+    if (numBytesSent < 0) {
+      printf("Error at 2.2\n");
+      return;
+    } else if (numBytesSent != numBytesRcvd) {
+      printf("Error at 2.3\n");
+      return;
+    }
+  }
+
+  // ToDo close the socket
+  close(clntSocket);
+}
 
 int main() {
 
